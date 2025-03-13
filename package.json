@@ -1,14 +1,14 @@
 {
-  "name": "maplibre-spreadsheet-osm-wkb",
+  "name": "wkb-to-geojson-converter",
   "version": "1.0.0",
-  "description": "",
-  "main": "togeojson.js",
+  "description": "Converts WKB data in CSV to GeoJSON format",
+  "main": "convert-wkb-to-geojson.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "convert": "node convert-wkb-to-geojson.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
     "wkx": "^0.5.0"
   }
 }

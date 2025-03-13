@@ -8,6 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.css' />
     <script src='https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js'></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/wkx@0.5.0/dist/wkx.js"></script>
     <style>
         body {
             margin: 0;
@@ -51,9 +53,62 @@
                     }
                 ]
             },
-            center: [-74.5, 40], // starting position
-            zoom: 2 // starting zoom
+            center: [-122.82117248, 49.28986622], // starting position
+            zoom: 10 // starting zoom
         });
+
+
+        const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?output=csv`
+
+        map.on('load', () => {
+
+            d3.csv(csvUrl).then(data => {
+
+                console.log('data', data);
+                const colorValues = [];
+
+                const features = data.map(row => {
+                    colorValues.push(row.benchmark_price);
+                    return JSON.parse(row.the_geom)
+                })
+
+                console.log('features', colorValues);
+                console.log('features', features);
+
+                const geojson = {
+                    type: 'FeatureCollection',
+                    features: features
+                }
+
+                map.getSource('data').setData(geojson);
+
+            }).catch(error => {
+                console.error('Error loading CSV:', error);
+            });
+
+
+            map.addSource('data', {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: []
+                }
+            });
+
+            map.addLayer({
+                id: 'polygons',
+                type: 'fill',
+                source: 'data',
+                paint: {
+                    'fill-color': '#088',
+                    'fill-opacity': 0.6,
+                    'fill-outline-color': '#000'
+                }
+            });
+
+        });
+
+
     </script>
 </body>
 
