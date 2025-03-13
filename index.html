@@ -67,13 +67,28 @@
                 console.log('data', data);
                 const colorValues = [];
 
-                const features = data.map(row => {
-                    colorValues.push(row.benchmark_price);
-                    return JSON.parse(row.the_geom)
-                })
+                const features = data.map((row, index) => {
+                    const price = parseFloat(row.benchmark_price);
+                    colorValues.push(price);
+                    const feature = JSON.parse(row.the_geom);
+                    // Add benchmark_price as a property to each feature
+                    feature.properties = feature.properties || {};
+                    feature.properties.benchmark_price = price;
+                    return feature;
+                });
 
                 console.log('features', colorValues);
                 console.log('features', features);
+
+                // Calculate min and max values
+                const minValue = d3.min(colorValues);
+                const maxValue = d3.max(colorValues);
+                console.log(`Price range: ${minValue} to ${maxValue}`);
+
+                // Create a color scale from white to deep blue
+                const colorScale = d3.scaleLinear()
+                    .domain([minValue, maxValue])
+                    .range(['white', '#026ec1']);
 
                 const geojson = {
                     type: 'FeatureCollection',
@@ -81,6 +96,20 @@
                 }
 
                 map.getSource('data').setData(geojson);
+
+                // Update the polygon layer to use the color scale
+                map.setPaintProperty('polygons', 'fill-color', [
+                    'case',
+                    ['has', 'benchmark_price'],
+                    [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'benchmark_price'],
+                        minValue, colorScale(minValue),
+                        maxValue, colorScale(maxValue)
+                    ],
+                    '#088' // fallback color if no benchmark_price
+                ]);
 
                 const bounds = new maplibregl.LngLatBounds();
                 features.forEach(feature => {
@@ -123,9 +152,8 @@
                 type: 'fill',
                 source: 'data',
                 paint: {
-                    'fill-color': '#088',
-                    'fill-opacity': 0.6,
-                    'fill-outline-color': '#000'
+                    'fill-color': '#088',  // Default color, will be updated dynamically
+                    'fill-opacity': .8,
                 }
             });
 
@@ -135,7 +163,7 @@
                 source: 'data',
                 paint: {
                     'line-color': 'white',
-                    'line-width': 2
+                    'line-width': 1
                 }
             });
 
