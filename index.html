@@ -21,11 +21,48 @@
         #map {
             height: 100%;
         }
+
+        #legend {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 3px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            width: 300px;
+            font-family: Arial, sans-serif;
+        }
+
+        #legend h4 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+        }
+
+        #gradient-bar {
+            height: 10px;
+            width: 100%;
+            margin-bottom: 5px;
+            border-radius: 20px;
+            border: 1px solid gray;
+        }
+
+        #legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
     </style>
 </head>
 
 <body>
     <div id="map"></div>
+    <div id="legend">
+        <h4>Benchmark Price ($)</h4>
+        <div id="gradient-bar"></div>
+        <div id="legend-labels"></div>
+    </div>
     <script>
         const map = new maplibregl.Map({
             container: 'map', // container id
@@ -83,6 +120,7 @@
                 // Calculate min and max values
                 const minValue = d3.min(colorValues);
                 const maxValue = d3.max(colorValues);
+                const avgValue = d3.mean(colorValues);
                 console.log(`Price range: ${minValue} to ${maxValue}`);
 
                 // Create a color scale from white to deep blue
@@ -110,6 +148,25 @@
                     ],
                     '#088' // fallback color if no benchmark_price
                 ]);
+
+                // Create legend gradient
+                const gradientBar = document.getElementById('gradient-bar');
+                const legendLabels = document.getElementById('legend-labels');
+
+                // Generate gradient
+                const gradientColors = [];
+                for (let i = 0; i <= 10; i++) {
+                    const value = minValue + (i / 10) * (maxValue - minValue);
+                    gradientColors.push(`${colorScale(value)} ${i * 10}%`);
+                }
+                gradientBar.style.background = `linear-gradient(to right, ${gradientColors.join(', ')})`;
+
+                // Add labels
+                legendLabels.innerHTML = `
+                    <span>${minValue.toLocaleString()}</span>
+                    <span>${avgValue.toLocaleString()} AVG</span>
+                    <span>${maxValue.toLocaleString()}</span>
+                `;
 
                 const bounds = new maplibregl.LngLatBounds();
                 features.forEach(feature => {
