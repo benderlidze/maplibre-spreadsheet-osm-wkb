@@ -82,6 +82,29 @@
 
                 map.getSource('data').setData(geojson);
 
+                const bounds = new maplibregl.LngLatBounds();
+                features.forEach(feature => {
+                    if (feature.geometry && feature.geometry.coordinates) {
+                        if (feature.geometry.type === 'Polygon') {
+                            feature.geometry.coordinates[0].forEach(coord => {
+                                bounds.extend(coord);
+                            });
+                        } else if (feature.geometry.type === 'MultiPolygon') {
+                            feature.geometry.coordinates.forEach(polygon => {
+                                polygon[0].forEach(coord => {
+                                    bounds.extend(coord);
+                                });
+                            });
+                        }
+                    }
+                });
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds, {
+                        padding: 50,
+                        maxZoom: 15
+                    });
+                }
+
             }).catch(error => {
                 console.error('Error loading CSV:', error);
             });
@@ -103,6 +126,16 @@
                     'fill-color': '#088',
                     'fill-opacity': 0.6,
                     'fill-outline-color': '#000'
+                }
+            });
+
+            map.addLayer({
+                id: 'lines',
+                type: 'line',
+                source: 'data',
+                paint: {
+                    'line-color': 'white',
+                    'line-width': 2
                 }
             });
 
