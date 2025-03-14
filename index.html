@@ -95,7 +95,38 @@
         });
 
 
-        const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?output=csv`
+        const links = {
+            main: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?output=csv` },
+            coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=736466179&single=true&output=csv` },
+            port_moody: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1878456390&single=true&output=csv` },
+            port_coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1197192464&single=true&output=csv` }
+        }
+
+        const id = new URLSearchParams(window.location.search).get('id');
+        let csvUrl = links.main.link;
+
+        switch (id) {
+            case 'coquitlam':
+                csvUrl = links.coquitlam.link;
+                break;
+
+            case 'port_moody':
+                csvUrl = links.port_moody.link;
+                break;
+
+            case 'port_coquitlam':
+                csvUrl = links.port_coquitlam.link;
+                break;
+
+            default:
+                csvUrl = links.main.link;
+                break;
+        }
+
+        // Add helper function to format numbers as US currency.
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
 
         map.on('load', () => {
 
@@ -164,8 +195,8 @@
                 // Add labels
                 legendLabels.innerHTML = `
                     <span>${minValue.toLocaleString()}</span>
-                    <span>${avgValue.toLocaleString()} AVG</span>
-                    <span>${maxValue.toLocaleString()}</span>
+                    <span>${formatMoney(avgValue)} AVG</span>
+                    <span>${formatMoney(maxValue)}</span>
                 `;
 
                 const bounds = new maplibregl.LngLatBounds();
@@ -250,11 +281,11 @@
                         features: [feature]
                     });
 
-                    // Create a popup displaying name and benchmark_price
+                    // Create a popup displaying name and benchmark_price formatted as US currency
                     new maplibregl.Popup()
                         .setLngLat(e.lngLat)
                         .setHTML(
-                            `<strong>${feature.properties.name || 'No name'}</strong><br>Benchmark Price: ${feature.properties.benchmark_price}`
+                            `<strong>${feature.properties.name || 'No name'}</strong><br>Benchmark Price: ${formatMoney(feature.properties.benchmark_price)}`
                         )
                         .addTo(map);
                 }
@@ -269,6 +300,8 @@
             });
 
         });
+
+
 
 
     </script>

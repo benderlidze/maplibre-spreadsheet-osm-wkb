@@ -4,8 +4,9 @@ const { createObjectCsvWriter } = require('csv-writer');
 const wkx = require('wkx');
 const path = require('path');
 
-const inputFilePath = path.resolve('tri_cities_report_jan_2025.csv');
-const outputFilePath = path.resolve('tri_cities_report_jan_2025_geojson.csv');
+const name = 'port_moody.csv';
+const inputFilePath = path.resolve('csv/' + name);
+const outputFilePath = path.resolve('csv/geo_' + name);
 
 // Store converted rows
 const results = [];
