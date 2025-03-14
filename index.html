@@ -220,8 +220,52 @@
                 source: 'data',
                 paint: {
                     'line-color': 'white',
-                    'line-width': 1
+                    'line-width': 0.5
                 }
+            });
+
+            // Add source and layer for highlighted polygon
+            map.addSource('highlight', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+            map.addLayer({
+                id: 'highlighted-polygon',
+                type: 'line',
+                source: 'highlight',
+                paint: {
+                    'line-color': 'white',
+                    'line-width': 5
+                }
+            });
+
+            // Add click event on polygons to highlight and show popup
+            map.on('click', 'polygons', (e) => {
+                if (e.features.length) {
+                    const feature = e.features[0];
+
+                    // Update highlight layer with clicked feature
+                    map.getSource('highlight').setData({
+                        type: 'FeatureCollection',
+                        features: [feature]
+                    });
+
+                    // Create a popup displaying name and benchmark_price
+                    new maplibregl.Popup()
+                        .setLngLat(e.lngLat)
+                        .setHTML(
+                            `<strong>${feature.properties.name || 'No name'}</strong><br>Benchmark Price: ${feature.properties.benchmark_price}`
+                        )
+                        .addTo(map);
+                }
+            });
+
+            // Change cursor to pointer when hovering over polygons
+            map.on('mouseenter', 'polygons', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            map.on('mouseleave', 'polygons', () => {
+                map.getCanvas().style.cursor = '';
             });
 
         });
