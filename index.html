@@ -96,30 +96,30 @@
 
 
         const links = {
-            main: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?output=csv` },
-            coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=736466179&single=true&output=csv` },
-            port_moody: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1878456390&single=true&output=csv` },
-            port_coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1197192464&single=true&output=csv` }
+            main: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?output=csv`, showPrice: true },
+            coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=736466179&single=true&output=csv`, showPrice: false },
+            port_moody: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1878456390&single=true&output=csv`, showPrice: false },
+            port_coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1197192464&single=true&output=csv`, showPrice: false }
         }
 
         const id = new URLSearchParams(window.location.search).get('id');
-        let csvUrl = links.main.link;
+        let csvObj = links.main;
 
         switch (id) {
             case 'coquitlam':
-                csvUrl = links.coquitlam.link;
+                csvObj = links.coquitlam;
                 break;
 
             case 'port_moody':
-                csvUrl = links.port_moody.link;
+                csvObj = links.port_moody;
                 break;
 
             case 'port_coquitlam':
-                csvUrl = links.port_coquitlam.link;
+                csvObj = links.port_coquitlam;
                 break;
 
             default:
-                csvUrl = links.main.link;
+                csvObj = links.main;
                 break;
         }
 
@@ -130,7 +130,7 @@
 
         map.on('load', () => {
 
-            d3.csv(csvUrl).then(data => {
+            d3.csv(csvObj.link).then(data => {
 
                 console.log('data', data);
                 const colorValues = [];
@@ -270,28 +270,29 @@
                 }
             });
 
-            // Add click event on polygons to highlight and show popup
+
             map.on('click', 'polygons', (e) => {
                 if (e.features.length) {
                     const feature = e.features[0];
 
-                    // Update highlight layer with clicked feature
+
                     map.getSource('highlight').setData({
                         type: 'FeatureCollection',
                         features: [feature]
                     });
 
-                    // Create a popup displaying name and benchmark_price formatted as US currency
+
+                    const name = `<h3>${feature.properties.name || 'No name'}</h3>`
+                    const price = csvObj.showPrice ? `Benchmark Price: ${formatMoney(feature.properties.benchmark_price)}` : '';
+
                     new maplibregl.Popup()
                         .setLngLat(e.lngLat)
-                        .setHTML(
-                            `<strong>${feature.properties.name || 'No name'}</strong><br>Benchmark Price: ${formatMoney(feature.properties.benchmark_price)}`
-                        )
+                        .setHTML(name + price)
                         .addTo(map);
                 }
             });
 
-            // Change cursor to pointer when hovering over polygons
+
             map.on('mouseenter', 'polygons', () => {
                 map.getCanvas().style.cursor = 'pointer';
             });
