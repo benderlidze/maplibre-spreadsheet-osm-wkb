@@ -64,6 +64,8 @@
         <div id="legend-labels"></div>
     </div>
     <script>
+
+        const legend = document.getElementById('legend');
         const map = new maplibregl.Map({
             container: 'map', // container id
             style: {
@@ -96,10 +98,10 @@
 
 
         const links = {
-            main: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?output=csv`, showPrice: true },
-            coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=736466179&single=true&output=csv`, showPrice: false },
-            port_moody: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1878456390&single=true&output=csv`, showPrice: false },
-            port_coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1197192464&single=true&output=csv`, showPrice: false }
+            main: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?output=csv`, showPrice: true, showLegend: true },
+            coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=736466179&single=true&output=csv`, showPrice: false, showLegend: false },
+            port_moody: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1878456390&single=true&output=csv`, showPrice: false, showLegend: false },
+            port_coquitlam: { link: `https://docs.google.com/spreadsheets/d/e/2PACX-1vRJqY-EFgJUtUuOpWAAexBmdWJ-hjibivPrquv383A6Y-JEvURAd6sWxcRj9xNKpBNKw5OAJiLXnJV-/pub?gid=1197192464&single=true&output=csv`, showPrice: false, showLegend: false }
         }
 
         const id = new URLSearchParams(window.location.search).get('id');
@@ -183,6 +185,8 @@
                 // Create legend gradient
                 const gradientBar = document.getElementById('gradient-bar');
                 const legendLabels = document.getElementById('legend-labels');
+
+                legend.style.display = csvObj.showLegend ? 'block' : 'none';
 
                 // Generate gradient
                 const gradientColors = [];
