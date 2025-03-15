@@ -10,6 +10,8 @@
     <script src='https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js'></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/wkx@0.5.0/dist/wkx.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6.5.0"></script>
+
     <style>
         body {
             margin: 0;
@@ -70,6 +72,8 @@
             container: 'map', // container id
             style: {
                 'version': 8,
+                'glyphs': 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+                
                 'sources': {
                     'raster-tiles': {
                         'type': 'raster',
@@ -140,7 +144,8 @@
                 const features = data.map((row, index) => {
                     const price = parseFloat(row.benchmark_price);
                     colorValues.push(price);
-                    const feature = JSON.parse(row.the_geom);
+                    const feature = JSON.parse(row.the_geom)
+                        ;
                     // Add benchmark_price as a property to each feature
                     feature.properties = feature.properties || {};
                     feature.properties.benchmark_price = price;
@@ -167,6 +172,20 @@
                 }
 
                 map.getSource('data').setData(geojson);
+
+                // Calculate centroids and add the polygon name
+                const centroids = features.map(feature => {
+                    const centroid = turf.centerOfMass(feature);
+                    centroid.properties = centroid.properties || {};
+                    centroid.properties.name = feature.properties.name || 'No name';
+                    return centroid;
+                });
+                const json = {
+                    type: 'FeatureCollection',
+                    features: centroids
+                }
+                console.log('json', JSON.stringify(json));
+                map.getSource('centroids').setData(json);
 
                 // Update the polygon layer to use the color scale
                 map.setPaintProperty('polygons', 'fill-color', [
@@ -274,6 +293,35 @@
                 }
             });
 
+
+            // Add new source and layer for centroid labels
+            map.addSource('centroids', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+            // map.addLayer({
+            //     id: 'centroid-points',
+            //     type: 'circle',
+            //     source: 'centroids',
+            //     paint: {
+            //         'circle-radius': 5,
+            //         'circle-color': '#FF0000',
+            //         'circle-opacity': 1,
+            //         'circle-stroke-width': 2,
+            //         'circle-stroke-color': '#FFFFFF'
+            //     }
+            // });
+            map.addLayer({
+                id: 'centroid-labels',
+                type: 'symbol',
+                source: 'centroids',
+                layout: {
+                    'text-field': ['get', 'name'],
+                    'text-size': 12,
+                    'text-offset': [0, 0],
+                    'text-anchor': 'top'
+                },
+            });
 
             map.on('click', 'polygons', (e) => {
                 if (e.features.length) {
