@@ -73,7 +73,7 @@
             style: {
                 'version': 8,
                 'glyphs': 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-                
+
                 'sources': {
                     'raster-tiles': {
                         'type': 'raster',
@@ -187,19 +187,23 @@
                 console.log('json', JSON.stringify(json));
                 map.getSource('centroids').setData(json);
 
-                // Update the polygon layer to use the color scale
-                map.setPaintProperty('polygons', 'fill-color', [
-                    'case',
-                    ['has', 'benchmark_price'],
-                    [
-                        'interpolate',
-                        ['linear'],
-                        ['get', 'benchmark_price'],
-                        minValue, colorScale(minValue),
-                        maxValue, colorScale(maxValue)
-                    ],
-                    '#088' // fallback color if no benchmark_price
-                ]);
+
+                if (data[0]?.colors) {
+                    map.setPaintProperty('polygons', 'fill-color', data[0]?.colors);
+                } else {
+                    map.setPaintProperty('polygons', 'fill-color', [
+                        'case',
+                        ['has', 'benchmark_price'],
+                        [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'benchmark_price'],
+                            minValue, colorScale(minValue),
+                            maxValue, colorScale(maxValue)
+                        ],
+                        '#088' // fallback color if no benchmark_price
+                    ]);
+                }
 
                 // Create legend gradient
                 const gradientBar = document.getElementById('gradient-bar');
@@ -321,6 +325,11 @@
                     'text-offset': [0, 0],
                     'text-anchor': 'top'
                 },
+                paint: {
+                    'text-color': 'black',
+                    'text-halo-color': 'white',
+                    'text-halo-width': 3
+                }
             });
 
             map.on('click', 'polygons', (e) => {
